@@ -12,10 +12,21 @@ class ForemanDiscovery::HostConverter
     if set_managed
       host.managed = set_managed
       host.primary_interface.managed = set_managed
+
+      set_default_ipmi_credentials(host)
     end
     # set build only and only on final save (facts are deleted)
     set_build_clean_facts(host) if set_build
     host
+  end
+
+  def self.set_default_ipmi_credentials(host)
+    host.interfaces.each do |interface|
+      next unless interface.is_a?(Nic::BMC)
+
+      interface.username ||= host.params['bmc_nic.username']
+      interface.password ||= host.params['bmc_nic.password']
+    end
   end
 
   def self.set_build_clean_facts(host)
